@@ -57,9 +57,9 @@ fun ProfileForm(navController: NavController, appViewModel: AppViewModel) {
             errors.add("Card Full Name must be 31 characters or less and contain only letters and spaces")
         }
 
-        if (cardNumber.isNotEmpty() && (!cardNumber.matches("1\\d{15}".toRegex()))) {
+        if (cardNumber.isNotEmpty() && (!cardNumber.matches("\\d{16}".toRegex()))) {
 
-            errors.add("Card Number must be exactly 16 digits and start with 1")
+            errors.add("Card Number must be exactly 16 digits")
         }
 
         if (cardExpireMonth.isNotEmpty()) {
@@ -69,8 +69,8 @@ fun ProfileForm(navController: NavController, appViewModel: AppViewModel) {
             }
         }
 
-        if (cardExpireYear.isNotEmpty() && !cardExpireYear.matches("\\d{4}".toRegex())) {
-            errors.add("Card Expire Year must be exactly 4 digits")
+        if (cardExpireYear.isNotEmpty() && !cardExpireYear.matches("\\d{4}".toRegex()) && cardExpireYear.toInt() < 2025) {
+            errors.add("Card Expire Year must be exactly 4 digits and not due!")
         }
 
         if (cardCVV.isNotEmpty() && !cardCVV.matches("\\d{3}".toRegex())) {
@@ -104,7 +104,7 @@ fun ProfileForm(navController: NavController, appViewModel: AppViewModel) {
         navController.navigate(before)
     }
 
-    Text("Update Profile", style = MaterialTheme.typography.headlineSmall)
+    Text("Update Profile", style = MaterialTheme.typography.headlineMedium)
 
     LazyColumn(
         modifier = Modifier

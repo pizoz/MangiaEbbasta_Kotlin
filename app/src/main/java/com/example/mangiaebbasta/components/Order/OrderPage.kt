@@ -1,22 +1,13 @@
 package com.example.mangiaebbasta.components.Order
 
 import android.util.Log
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.homepage_progetto.viewModels.AppViewModel
 import com.example.mangiaebbasta.R
@@ -24,43 +15,46 @@ import com.example.mangiaebbasta.components.LoadingScreen
 import com.example.mangiaebbasta.model.CompletedOrderResponse
 import com.example.mangiaebbasta.model.MenuResponseFromGet
 import com.example.mangiaebbasta.model.OnDeliveryOrderResponse
+import com.example.mangiaebbasta.model.Posizione
 import com.mapbox.geojson.Point
 import com.mapbox.maps.extension.compose.MapEffect
 import com.mapbox.maps.extension.compose.MapboxMap
+import com.mapbox.maps.extension.compose.animation.viewport.MapViewportState
 import com.mapbox.maps.extension.compose.animation.viewport.rememberMapViewportState
 import com.mapbox.maps.extension.compose.annotation.generated.PointAnnotation
 import com.mapbox.maps.extension.compose.annotation.rememberIconImage
 import kotlinx.coroutines.delay
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun OrderPage(appViewModel: AppViewModel) {
-
-    val order = appViewModel.orderInfo.collectAsState().value
-    val userInfo = appViewModel.user.collectAsState().value
-    var menu by remember { mutableStateOf(null as MenuResponseFromGet?) }
+    val order by appViewModel.orderInfo.collectAsState()
+    val userInfo by appViewModel.user.collectAsState()
+    var menu by remember { mutableStateOf<MenuResponseFromGet?>(null) }
     val mapViewPortState = rememberMapViewportState()
-    //problema, il delay è portato anche nella navigazione, quindi è lenta. Da risolvere
+
     LaunchedEffect(Unit) {
-        Log.d("OrderPage", "Montata")
+        Log.d("OrderPage", "Mounted")
         appViewModel.getOrderInfo()
         appViewModel.setScreen("order")
     }
-    LaunchedEffect(order) {
 
+    LaunchedEffect(order) {
         if (order != null) {
             when (order) {
                 is CompletedOrderResponse -> {
-                    menu = appViewModel.getMenu(order.mid)
+                    menu = appViewModel.getMenu((order as CompletedOrderResponse).mid)
                     mapViewPortState.setCameraOptions {
-
-                        center(Point.fromLngLat(order.deliveryLocation.lng, order.deliveryLocation.lat))
+                        center(Point.fromLngLat((order as CompletedOrderResponse).deliveryLocation.lng, (order as CompletedOrderResponse).deliveryLocation.lat))
                         zoom(15.0)
                     }
                 }
                 is OnDeliveryOrderResponse -> {
-                    menu = appViewModel.getMenu(order.mid)
+                    menu = appViewModel.getMenu((order as OnDeliveryOrderResponse).mid)
                     mapViewPortState.setCameraOptions {
-                        center(Point.fromLngLat(order.currentPosition.lng, order.currentPosition.lat))
+                        center(Point.fromLngLat((order as OnDeliveryOrderResponse).currentPosition.lng, (order as OnDeliveryOrderResponse).currentPosition.lat))
                         zoom(15.0)
                     }
                     delay(5000)
@@ -69,104 +63,124 @@ fun OrderPage(appViewModel: AppViewModel) {
             }
         }
     }
-    if ((order is CompletedOrderResponse || order is OnDeliveryOrderResponse) && menu != null) {
-        Column(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Text(text = "Order Page")
 
-            if (order is CompletedOrderResponse) {
-                Text(text = "Ordine Completo")
-                Text("Consegnato alle: " + order.deliveryTimestamp)
-                Text("Ordine numero: " + order.oid.toString())
-                Text("Menu ordinato: " + menu!!.name)
-            } else if (order is OnDeliveryOrderResponse) {
-                Text(text = "Ordine in consegna")
-                Text("Il drone arriverà alle: " + order.expectedDeliveryTimestamp)
-                Text("Ordine numero: " + order.oid.toString())
-                Text("Menu ordinato: " + menu!!.name)
-            }
-            MapboxMap(
-                modifier = Modifier.fillMaxSize(),
-                mapViewportState = mapViewPortState,
-            ) {
-                MapEffect (Unit) { mapView ->
-                    mapView.mapboxMap.loadStyle("mapbox://styles/pizoz/cm5iifwft001z01s3dfhfbtak")
-                }
-                if (menu != null) {
-                    when(order) {
-                        is OnDeliveryOrderResponse -> {
-                            val drone = rememberIconImage(
-                                key = R.drawable.drone,
-                                painter = painterResource(id = R.drawable.drone)
-                            )
-                            PointAnnotation(
-                                point = Point.fromLngLat(
-                                    order.currentPosition.lng,
-                                    order.currentPosition.lat
-                                )
-                            ) {
-                                iconImage = drone
-                                iconSize = 0.2
-                            }
-                            val home = rememberIconImage(
-                                key = R.drawable.home,
-                                painter = painterResource(id = R.drawable.home)
-                            )
-                            PointAnnotation(
-                                point = Point.fromLngLat(
-                                    order.deliveryLocation.lng,
-                                    order.deliveryLocation.lat
-                                )
-                            ) {
-                                iconImage = home
-                                iconSize = 0.2
-                            }
-                        }
-                        is CompletedOrderResponse -> {
-                            val home = rememberIconImage(
-                                key = R.drawable.home,
-                                painter = painterResource(id = R.drawable.home)
-                            )
-                            PointAnnotation(
-                                point = Point.fromLngLat(
-                                    order.deliveryLocation.lng,
-                                    order.deliveryLocation.lat
-                                )
-                            ) {
-                                iconImage = home
-                                iconSize = 0.2
-                            }
-
-                        }
-                    }
-
-                    val shop = rememberIconImage(key = R.drawable.shop, painter = painterResource(id = R.drawable.shop))
-                    PointAnnotation(point = Point.fromLngLat(menu!!.location.lng, menu!!.location.lat)) {
-                        iconImage = shop
-                        iconSize = 0.2
-                    }
-                }
-
-            }
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background
+    ) {
+        when {
+            order is CompletedOrderResponse && menu != null -> CompletedOrderContent(order as CompletedOrderResponse, menu!!, mapViewPortState)
+            order is OnDeliveryOrderResponse && menu != null -> OnDeliveryOrderContent(order as OnDeliveryOrderResponse, menu!!, mapViewPortState)
+            userInfo != null && order == null -> NoOrderPage()
+            else -> LoadingScreen()
         }
-    } else if (userInfo != null && order == null) {
-        Column(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Text(text = "Order Page")
-            Text(text = "Nessun ordine")
-        }
-    } else {
-        Log.d("OrderPage", menu.toString())
-        LoadingScreen()
     }
 }
+
+@Composable
+fun CompletedOrderContent(order: CompletedOrderResponse, menu: MenuResponseFromGet, mapViewPortState: MapViewportState) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = "Ordine Consegnato",
+            style = MaterialTheme.typography.headlineMedium,
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        OrderInfoCard(order, menu)
+        Spacer(modifier = Modifier.height(16.dp))
+        MapComponent(mapViewPortState, order.deliveryLocation, menu.location)
+    }
+}
+
+@Composable
+fun OnDeliveryOrderContent(order: OnDeliveryOrderResponse, menu: MenuResponseFromGet, mapViewPortState: MapViewportState) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = "Ordine in Consegna",
+            style = MaterialTheme.typography.headlineMedium,
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        OrderInfoCard(order, menu)
+        Spacer(modifier = Modifier.height(16.dp))
+        MapComponent(mapViewPortState, order.deliveryLocation, menu.location, order.currentPosition)
+    }
+}
+fun formatTimestamp(timestamp: String): String {
+    val instant = Instant.parse(timestamp)
+    val zoneId = ZoneId.systemDefault()
+    val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")
+    return instant.atZone(zoneId).format(formatter)
+}
+
+@Composable
+fun OrderInfoCard(order: Any, menu: MenuResponseFromGet) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            when (order) {
+                is CompletedOrderResponse -> {
+                    Text("Order #${order.oid}", style = MaterialTheme.typography.titleMedium)
+                    Text("Consegnato il: ${formatTimestamp(order.deliveryTimestamp)}", style = MaterialTheme.typography.bodyMedium)
+                }
+                is OnDeliveryOrderResponse -> {
+                    Text("Order #${order.oid}", style = MaterialTheme.typography.titleMedium)
+                    Text("Expected delivery: ${formatTimestamp(order.expectedDeliveryTimestamp)}", style = MaterialTheme.typography.bodyMedium)
+                }
+            }
+            Text("Menu: ${menu.name}", style = MaterialTheme.typography.bodyMedium)
+        }
+    }
+}
+
+@Composable
+fun MapComponent(
+    mapViewPortState: MapViewportState,
+    deliveryLocation: Posizione,
+    shopLocation: Posizione,
+    currentPosition: Posizione? = null
+) {
+    MapboxMap(
+        modifier = Modifier.fillMaxSize(),
+        mapViewportState = mapViewPortState,
+    ) {
+        MapEffect(Unit) { mapView ->
+            mapView.mapboxMap.loadStyle("mapbox://styles/pizoz/cm5iifwft001z01s3dfhfbtak")
+        }
+
+        val homeIcon = rememberIconImage(key = R.drawable.home, painter = painterResource(id = R.drawable.home))
+        val shopIcon = rememberIconImage(key = R.drawable.shop, painter = painterResource(id = R.drawable.shop))
+
+        PointAnnotation(point = Point.fromLngLat(deliveryLocation.lng, deliveryLocation.lat)) {
+            iconImage = homeIcon
+            iconSize = 0.2
+        }
+
+        PointAnnotation(point = Point.fromLngLat(shopLocation.lng, shopLocation.lat)) {
+            iconImage = shopIcon
+            iconSize = 0.2
+        }
+
+        if (currentPosition != null) {
+            val droneIcon = rememberIconImage(key = R.drawable.drone, painter = painterResource(id = R.drawable.drone))
+            PointAnnotation(point = Point.fromLngLat(currentPosition.lng, currentPosition.lat)) {
+                iconImage = droneIcon
+                iconSize = 0.2
+            }
+        }
+    }
+}
+

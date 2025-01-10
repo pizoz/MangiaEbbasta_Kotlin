@@ -51,7 +51,7 @@ fun ProfilePage(navController: NavHostController, appViewModel: AppViewModel) {
 
                 Text(
                     text = "Profile Page",
-                    style = MaterialTheme.typography.headlineSmall,
+                    style = MaterialTheme.typography.headlineMedium,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
 

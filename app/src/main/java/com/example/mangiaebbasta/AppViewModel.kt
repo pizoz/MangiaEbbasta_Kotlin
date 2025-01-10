@@ -19,8 +19,10 @@ import com.example.mangiaebbasta.model.Posizione
 import com.example.mangiaebbasta.model.UserForPut
 import com.example.mangiaebbasta.model.UserResponseFromCreate
 import com.example.mangiaebbasta.model.UserResponseFromGet
+import com.mapbox.maps.MapLoadingErrorCallback
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -286,14 +288,16 @@ class AppViewModel(
         return positionManager.checkLocationPermission()
     }
 
-    fun isValidUserInfo(): Boolean {
-        if (_userInfo.value == null) {
-            LoadUserInfo()
+    suspend fun isValidUserInfo(): Boolean {
+        return withContext(Dispatchers.IO) {
+            async {
+                LoadUserInfo()
+            }.await()
+            _userInfo.value?.firstName != null && _userInfo.value?.lastName != null && _userInfo.value?.cardFullName != null && _userInfo.value?.cardNumber != null && _userInfo.value?.cardExpireMonth != null && _userInfo.value?.cardExpireYear != null && _userInfo.value?.cardCVV != null
         }
-        return _userInfo.value?.firstName != null && _userInfo.value?.lastName != null && _userInfo.value?.cardFullName != null && _userInfo.value?.cardNumber != null && _userInfo.value?.cardExpireMonth != null && _userInfo.value?.cardExpireYear != null && _userInfo.value?.cardCVV != null
     }
 
-    fun createOrder(callback: () -> Unit) {
+    fun createOrder(callback: () -> Unit, errorCallback: (string: String?) -> Unit) {
         viewModelScope.launch {
             if (_position.value != null && _user.value != null) {
                 val sidAndLocation = DeliveryLocationWithSid(
@@ -309,6 +313,7 @@ class AppViewModel(
                     callback()
                 } catch (e: Exception) {
                     Log.e("AppViewModel", "Error creating order: $e")
+                    errorCallback(e.message)
                 }
             }
         }

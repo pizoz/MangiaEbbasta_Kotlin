@@ -1,5 +1,6 @@
 package com.example.mangiaebbasta.components.Home
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -26,6 +27,7 @@ import androidx.navigation.NavHostController
 import com.example.homepage_progetto.viewModels.AppViewModel
 import com.example.mangiaebbasta.components.LoadingScreen
 import com.example.mangiaebbasta.model.MenuResponseFromGetandImage
+import kotlinx.coroutines.runBlocking
 
 @Composable
 fun MenuPage(navController: NavHostController, appViewModel: AppViewModel) {
@@ -34,6 +36,7 @@ fun MenuPage(navController: NavHostController, appViewModel: AppViewModel) {
 
     LaunchedEffect(Unit) {
         appViewModel.setScreen("menu")
+        appViewModel.LoadUserInfo()
         menu = appViewModel.getMenu()
     }
 
@@ -119,11 +122,15 @@ fun MenuPage(navController: NavHostController, appViewModel: AppViewModel) {
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
                         Button(onClick = {
-                            if (!appViewModel.isValidUserInfo()) {
-                                showDialog = true
-                            } else {
-                                navController.navigate("confirm_order")
+                            runBlocking {
+                                Log.d("MenuPage",appViewModel.userInfo.value.toString())
+                                if (!appViewModel.isValidUserInfo()) {
+                                    showDialog = true
+                                } else {
+                                    navController.navigate("confirm_order")
+                                }
                             }
+
                         }) {
                             Text("Conferma Ordine")
                         }

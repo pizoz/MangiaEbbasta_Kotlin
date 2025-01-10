@@ -134,7 +134,10 @@ object CommunicationController {
                 Log.w(TAG, "User already has an active order")
                 throw Exception("User already has an active order")
             }
-
+            if (httpResponse.status.value == 403) {
+                Log.w(TAG, "Invalid Card")
+                throw Exception("Invalid card")
+            }
             if (!httpResponse.status.isSuccess()) {
                 throw Exception("Error creating order: ${httpResponse.status}")
             }
