@@ -1,6 +1,5 @@
 package com.example.homepage_progetto.model
 
-import android.location.Location
 import android.net.Uri
 import android.util.Log
 import com.example.mangiaebbasta.model.CompletedOrderResponse
@@ -34,7 +33,6 @@ import kotlinx.serialization.json.Json
 object CommunicationController {
 
     private val BASE_URL = "https://develop.ewlab.di.unimi.it/mc/2425"
-    var sid: String? = null
     private val TAG = " CommunicationController"
 
     private val client = HttpClient(Android) {
@@ -62,7 +60,7 @@ object CommunicationController {
         val urlUri = Uri.parse(url)
         val urlBuilder = urlUri.buildUpon()
         queryParameters.forEach { (key, value) ->
-            urlBuilder.appendQueryParameter(key, value.toString())
+            urlBuilder.appendQueryParameter(key, value)
         }
         val completeUrlString = urlBuilder.build().toString()
         Log.d(TAG, completeUrlString)
@@ -110,7 +108,7 @@ object CommunicationController {
         return result
     }
 
-    suspend fun updateUser(UserForPut: UserForPut, uid: Int): Unit {
+    suspend fun updateUser(UserForPut: UserForPut, uid: Int){
         Log.d(TAG, "updateUser")
 
         val url = BASE_URL + "/user" + "/" + uid

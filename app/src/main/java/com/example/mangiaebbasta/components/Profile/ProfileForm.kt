@@ -19,7 +19,7 @@ import com.example.homepage_progetto.viewModels.AppViewModel
 
 @Composable
 fun ProfileForm(navController: NavController, appViewModel: AppViewModel) {
-    var user = appViewModel.userInfo.collectAsState().value
+    val user = appViewModel.userInfo.collectAsState().value
     var firstName by remember { mutableStateOf("") }
     var lastName by remember { mutableStateOf("") }
     var cardFullName by remember { mutableStateOf("") }
@@ -230,15 +230,3 @@ fun CustomInputField(
         )
     }
 }
-
-data class User(
-    val uid: Int,
-    val sid: String,
-    val firstName: String,
-    val lastName: String,
-    val cardFullName: String,
-    val cardNumber: String,
-    val cardExpireMonth: Int,
-    val cardExpireYear: Int,
-    val cardCVV: String
-)

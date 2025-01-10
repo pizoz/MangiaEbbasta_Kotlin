@@ -8,19 +8,15 @@ import androidx.lifecycle.viewModelScope
 import com.example.homepage_progetto.model.CommunicationController
 import com.example.homepage_progetto.model.DataStoreManager
 import com.example.homepage_progetto.repositories.ImageRepository
-import com.example.mangiaebbasta.model.CompletedOrderResponse
 import com.example.mangiaebbasta.model.PositionManager
 import com.example.mangiaebbasta.model.DeliveryLocationWithSid
 import com.example.mangiaebbasta.model.MenuResponseFromGet
 import com.example.mangiaebbasta.model.MenuResponseFromGetandImage
 import com.example.mangiaebbasta.model.NearMenuandImage
-import com.example.mangiaebbasta.model.OnDeliveryOrderResponse
 import com.example.mangiaebbasta.model.Posizione
 import com.example.mangiaebbasta.model.UserForPut
 import com.example.mangiaebbasta.model.UserResponseFromCreate
 import com.example.mangiaebbasta.model.UserResponseFromGet
-import com.mapbox.maps.MapLoadingErrorCallback
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -237,7 +233,7 @@ class AppViewModel(
 
     fun UpdateUserInfo(infoUser: UserResponseFromGet?) {
         if (infoUser != null) {
-            var userForPut = UserForPut(
+            val userForPut = UserForPut(
                 infoUser.firstName,
                 infoUser.lastName,
                 infoUser.cardFullName,
