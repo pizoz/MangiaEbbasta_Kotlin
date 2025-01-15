@@ -7,6 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
@@ -64,7 +65,7 @@ fun Root(appViewModel: AppViewModel) {
                     onClick = { navController.navigate("order") },
                     icon = {
                         androidx.compose.material3.Icon(
-                            Icons.AutoMirrored.Filled.List,
+                            Icons.Default.ShoppingCart,
                             contentDescription = "Order"
                         )
                     },

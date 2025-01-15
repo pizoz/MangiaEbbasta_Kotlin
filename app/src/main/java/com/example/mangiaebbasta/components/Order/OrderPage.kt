@@ -173,6 +173,7 @@ fun MapComponent(
             iconSize = 0.2
         }
 
+
         if (currentPosition != null) {
             val droneIcon = rememberIconImage(key = R.drawable.drone, painter = painterResource(id = R.drawable.drone))
             PointAnnotation(point = Point.fromLngLat(currentPosition.lng, currentPosition.lat)) {

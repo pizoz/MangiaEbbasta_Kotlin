@@ -27,13 +27,15 @@ fun ProfileForm(navController: NavController, appViewModel: AppViewModel) {
     var cardExpireMonth by remember { mutableStateOf("") }
     var cardExpireYear by remember { mutableStateOf("") }
     var cardCVV by remember { mutableStateOf("") }
-    var before by remember { mutableStateOf("") }
+    var before by remember { mutableStateOf("profile") }
 
     var dialogMessage by remember { mutableStateOf("") }
     var showDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        before = appViewModel.screen.value ?: "profile"
+        if (appViewModel.screen.value == "confirm_order") {
+            before = "confirm_order"
+        }
         appViewModel.setScreen("profile_form")
         if (user == null) {
             appViewModel.LoadUserInfo()
@@ -100,6 +102,7 @@ fun ProfileForm(navController: NavController, appViewModel: AppViewModel) {
 
         // Perform save operation and navigate to the appropriate screen
         Log.d("ProfileForm", "Updated User: $updatedUser")
+        Log.d("ProfileForm", "Before: $before")
         appViewModel.UpdateUserInfo(updatedUser)
         navController.navigate(before)
     }

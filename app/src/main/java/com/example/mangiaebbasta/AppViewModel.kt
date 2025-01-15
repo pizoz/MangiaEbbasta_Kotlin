@@ -166,6 +166,7 @@ class AppViewModel(
             }
         }
     }
+
     suspend fun getUserFirstAndLastName(): String {
         withContext(Dispatchers.IO) {
             if (_userInfo.value == null) {
