@@ -135,7 +135,7 @@ fun MenuPage(navController: NavHostController, appViewModel: AppViewModel) {
                             Text("Conferma Ordine")
                         }
                         Button(onClick = {
-                            navController.popBackStack()
+                            navController.navigate("home")
                         }) {
                             Text("Torna alla Home")
                         }
